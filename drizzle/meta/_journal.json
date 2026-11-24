@@ -1,0 +1,27 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1795335464428,
+      "tag": "0000_daily_shen",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1795336682137,
+      "tag": "0001_broken_naoko",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1795342294458,
+      "tag": "0002_bouncy_vanisher",
+      "breakpoints": true
+    }
+  ]
+}
