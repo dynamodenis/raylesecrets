@@ -36,8 +36,8 @@ pnpm admin:password   # choose the password (asks twice, hidden while typing)
 
 This writes a hash of the password and a session secret to `.env`. Restart the
 server afterwards. Run it again at any time to change the password. On the
-live host, copy `ADMIN_PASSWORD_HASH` and `SESSION_SECRET` into its
-environment settings.
+live host, set `ADMIN_PASSWORD_HASH` and `SESSION_SECRET` on the Cloudflare
+Pages project (see below).
 
 ## Going live on Cloudflare Pages
 
@@ -65,8 +65,6 @@ Add these in GitHub: repository → Settings → Secrets and variables → Actio
 | Secret | `CLOUDFLARE_API_TOKEN` | Cloudflare dashboard → My Profile → API Tokens → Create Token → Custom token, with the permission **Account → Cloudflare Pages → Edit** |
 | Secret | `CLOUDFLARE_ACCOUNT_ID` | Cloudflare dashboard → Workers & Pages → Account ID (right-hand side) |
 | Secret | `DATABASE_URL` | The Neon connection string, same as in `.env` |
-| Secret | `ADMIN_PASSWORD_HASH` | From `.env`, written by `pnpm admin:password` |
-| Secret | `SESSION_SECRET` | From `.env`, written by `pnpm admin:password` |
 | Variable (optional) | `SITE_URL` | The public address, e.g. `https://raylesecret.co.ke`. Used in link previews and the sitemap. Without it the site uses whatever address it is visited on. |
 
 With the GitHub CLI, from this folder (each command asks you to paste the value):
@@ -75,15 +73,24 @@ With the GitHub CLI, from this folder (each command asks you to paste the value)
 gh secret set CLOUDFLARE_API_TOKEN
 gh secret set CLOUDFLARE_ACCOUNT_ID
 gh secret set DATABASE_URL
-gh secret set ADMIN_PASSWORD_HASH
-gh secret set SESSION_SECRET
 gh variable set SITE_URL          # optional
 ```
 
-Nothing needs to be typed into the Cloudflare dashboard: the workflow copies
-`DATABASE_URL`, `ADMIN_PASSWORD_HASH`, `SESSION_SECRET` and `SITE_URL` to the
-Pages project on every deploy. To change one (a new admin password, say),
-update it in GitHub and run the Deploy workflow again.
+The workflow copies `DATABASE_URL` and `SITE_URL` to the Pages project on
+every deploy. To change one, update it in GitHub and run the Deploy workflow
+again.
+
+The admin password hash and session secret are set directly on the Cloudflare
+Pages project, not in GitHub. After `pnpm admin:password` has written them to
+`.env`, send each one (the command asks you to paste the value):
+
+```bash
+pnpm exec wrangler pages secret put ADMIN_PASSWORD_HASH --project-name raylesecret
+pnpm exec wrangler pages secret put SESSION_SECRET --project-name raylesecret
+```
+
+Or add them in Cloudflare → Workers & Pages → raylesecret → Settings →
+Variables and Secrets. A change takes effect on the next deploy.
 
 After the first deploy the site is at `https://raylesecret.pages.dev`. To use
 your own domain, add it in Cloudflare → Workers & Pages → raylesecret →

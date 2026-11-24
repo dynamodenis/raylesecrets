@@ -4,10 +4,10 @@ name: Deploy
 # it to Cloudflare Pages. This is the only way the site gets deployed.
 #
 # Setup (once), in GitHub under Settings → Secrets and variables → Actions:
-#   Secrets:  CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID, DATABASE_URL,
-#             ADMIN_PASSWORD_HASH, SESSION_SECRET
+#   Secrets:  CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID, DATABASE_URL
 #   Variable: SITE_URL (optional, the public address of the site)
-# The README explains where each value comes from.
+# ADMIN_PASSWORD_HASH and SESSION_SECRET are set directly on the Cloudflare
+# Pages project, not here. The README explains where each value comes from.
 on:
   push:
     branches: [main]
@@ -98,13 +98,12 @@ jobs:
             pnpm exec wrangler pages project create "$PAGES_PROJECT" --production-branch main
           fi
 
-      # The live site reads these when it runs. Keeping them in GitHub and
-      # sending them on every deploy means there is one place to change them.
+      # The live site reads these when it runs. Only the listed settings are
+      # touched; the admin password hash and session secret, which are set
+      # directly on the Pages project, are left as they are.
       - name: Send the site's settings to Cloudflare
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          ADMIN_PASSWORD_HASH: ${{ secrets.ADMIN_PASSWORD_HASH }}
-          SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
           SITE_URL: ${{ vars.SITE_URL }}
         run: |
           node scripts/pages-secrets.mjs "$RUNNER_TEMP/pages-secrets.json"

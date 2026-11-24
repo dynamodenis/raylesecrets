@@ -3,7 +3,9 @@
 // Usage: node scripts/pages-secrets.mjs <output file>
 import { writeFileSync } from 'node:fs'
 
-const required = ['DATABASE_URL', 'ADMIN_PASSWORD_HASH', 'SESSION_SECRET']
+// ADMIN_PASSWORD_HASH and SESSION_SECRET are not sent from here: they are set
+// directly on the Cloudflare Pages project (see the README).
+const required = ['DATABASE_URL']
 const optional = ['SITE_URL']
 
 const missing = required.filter((name) => !process.env[name])

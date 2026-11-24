@@ -9,5 +9,6 @@
   // adds the output folder; that copy is what `wrangler pages deploy` reads.
   //
   // Secrets (DATABASE_URL, ADMIN_PASSWORD_HASH, SESSION_SECRET, SITE_URL) are
-  // not kept here. The deploy workflow sends them to Cloudflare from GitHub.
+  // not kept here. The deploy workflow sends DATABASE_URL and SITE_URL to
+  // Cloudflare from GitHub; the other two are set directly on the Pages project.
 }
