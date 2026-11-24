@@ -1,0 +1,115 @@
+name: Deploy
+
+# Every push to main updates the database, then builds the site and deploys
+# it to Cloudflare Pages. This is the only way the site gets deployed.
+#
+# Setup (once), in GitHub under Settings → Secrets and variables → Actions:
+#   Secrets:  CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID, DATABASE_URL,
+#             ADMIN_PASSWORD_HASH, SESSION_SECRET
+#   Variable: SITE_URL (optional, the public address of the site)
+# The README explains where each value comes from.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Never run two deploys at once; a newer push waits for the current one.
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  PAGES_PROJECT: raylesecret
+
+jobs:
+  migrate:
+    name: Migrate the database (Neon)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # Shared with the manual migration workflow, so the two never overlap.
+    concurrency:
+      group: db-migrate-production
+      cancel-in-progress: false
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.28.1
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Require the connection string
+        run: |
+          if [ -z "$DATABASE_URL" ]; then
+            echo "::error::Repository secret DATABASE_URL is not set."
+            exit 1
+          fi
+
+      - name: Check migration history
+        run: pnpm db:check
+
+      # Does nothing when there are no new migrations.
+      - name: Apply pending migrations
+        run: pnpm db:migrate
+
+  deploy:
+    name: Deploy to Cloudflare Pages
+    # The new code only goes live once the database is ready for it.
+    needs: migrate
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.28.1
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm run typecheck
+
+      - run: pnpm run build
+
+      - name: Create the Pages project if it does not exist
+        run: |
+          if ! pnpm exec wrangler pages project list --json \
+            | node -e 'const list = JSON.parse(require("fs").readFileSync(0, "utf8")); process.exit(list.some((p) => Object.values(p).includes(process.env.PAGES_PROJECT)) ? 0 : 1)'
+          then
+            pnpm exec wrangler pages project create "$PAGES_PROJECT" --production-branch main
+          fi
+
+      # The live site reads these when it runs. Keeping them in GitHub and
+      # sending them on every deploy means there is one place to change them.
+      - name: Send the site's settings to Cloudflare
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          ADMIN_PASSWORD_HASH: ${{ secrets.ADMIN_PASSWORD_HASH }}
+          SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
+          SITE_URL: ${{ vars.SITE_URL }}
+        run: |
+          node scripts/pages-secrets.mjs "$RUNNER_TEMP/pages-secrets.json"
+          pnpm exec wrangler pages secret bulk "$RUNNER_TEMP/pages-secrets.json" --project-name "$PAGES_PROJECT"
+          rm -f "$RUNNER_TEMP/pages-secrets.json"
+
+      - name: Deploy
+        run: pnpm exec wrangler pages deploy dist --project-name "$PAGES_PROJECT" --branch main

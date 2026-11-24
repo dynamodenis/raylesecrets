@@ -3,6 +3,10 @@
  *
  * PLACEHOLDERS: everything marked "dummy" below is made up and must be
  * replaced with the real details before launch.
+ *
+ * Once the database is set up, the phone number, payment details and pickup
+ * point are changed in the admin settings, and the values here are only the
+ * starting point.
  */
 export const site = {
   name: 'Ray Le Secret',
@@ -10,8 +14,9 @@ export const site = {
   description:
     'Natural, herbal hair care handmade in Kenya. Anagen Tonic and Anagen Oil for stronger hair and a healthier scalp, for men and women.',
 
-  // dummy. Once the database is set up this is changed in the admin settings.
-  whatsappNumber: '254700000000',
+  /** The one number for both WhatsApp and phone calls: 0798 175 265 */
+  whatsappNumber: '254798175265',
+  // dummy
   email: 'hello@raylesecret.example',
 
   // dummy
@@ -21,20 +26,22 @@ export const site = {
     { label: 'Facebook', href: 'https://facebook.com/' },
   ],
 
-  // dummy. Once the database is set up these are changed in the admin settings.
+  // Customers pay to the Pochi la Biashara number. There is no Paybill or
+  // Till yet; a method left empty is not offered at checkout.
   payment: {
-    paybillNumber: '000000',
-    tillNumber: '000000',
-    pochiNumber: '0700 000 000',
+    paybillNumber: null as string | null,
+    tillNumber: null as string | null,
+    pochiNumber: '0798 175 265' as string | null,
+    // dummy: the name customers see on their phone when they pay
     registeredName: 'RAY LE SECRET',
   },
 
-  // dummy. Once the database is set up this is changed in the admin settings.
+  // Chokaa for now. The exact meeting spot is agreed on WhatsApp.
   pickup: {
-    name: 'Ray Le Secret Pickup Point',
-    address: 'Sample Building, Ground Floor, Nairobi CBD',
-    hours: 'Monday to Saturday, 9:00 am to 6:00 pm',
-    mapUrl: 'https://maps.google.com/',
+    name: 'Chokaa',
+    address: 'We share the exact meeting spot on WhatsApp',
+    hours: 'Open 8:00 am to 7:00 pm',
+    mapUrl: null as string | null,
   },
 } as const
 

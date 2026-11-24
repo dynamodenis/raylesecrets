@@ -2,7 +2,7 @@ import { createServerFn } from '@tanstack/react-start'
 import { asc, eq } from 'drizzle-orm'
 import { z } from 'zod'
 
-import { catalog } from '#/data/catalog'
+import { catalog, sizesOf } from '#/data/catalog'
 import { getDb, hasDatabase } from '#/db/index'
 import { productImages, products } from '#/db/schema'
 
@@ -18,7 +18,7 @@ async function loadProducts(): Promise<Array<Product>> {
       .select()
       .from(products)
       .where(eq(products.isActive, true))
-      .orderBy(asc(products.sortOrder)),
+      .orderBy(asc(products.sortOrder), asc(products.id)),
     db.select().from(productImages).orderBy(asc(productImages.sortOrder)),
   ])
 
@@ -28,6 +28,7 @@ async function loadProducts(): Promise<Array<Product>> {
     tagline: row.tagline,
     description: row.description,
     sizeLabel: row.sizeLabel,
+    family: row.family,
     priceKes: row.priceKes,
     stock: row.stock,
     benefits: row.benefits,
@@ -55,5 +56,7 @@ export const getProduct = createServerFn({ method: 'GET' })
   .validator(z.object({ slug: z.string().min(1).max(100) }))
   .handler(async ({ data }) => {
     const all = await loadProducts()
-    return all.find((product) => product.slug === data.slug) ?? null
+    const product = all.find((item) => item.slug === data.slug)
+    // The other bottle sizes come along for the size picker.
+    return product ? { product, sizes: sizesOf(product, all) } : null
   })

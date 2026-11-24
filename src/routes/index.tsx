@@ -8,6 +8,8 @@ import { site } from '#/lib/site'
 import { useSiteInfo } from '#/lib/site-info'
 import { getProducts } from '#/server/catalog'
 
+import { shopFront } from '#/data/catalog'
+
 export const Route = createFileRoute('/')({
   loader: () => getProducts(),
   // The shop itself, in the form Google reads.
@@ -54,17 +56,18 @@ const firstSteps = [
   },
   {
     title: 'Pay with M-PESA',
-    text: 'Pay by Paybill, Till or Pochi la Biashara. We confirm your payment the same day.',
+    text: 'Pay with M-PESA to our Pochi la Biashara number. We confirm your payment the same day.',
   },
 ]
 
 function Home() {
-  const products = Route.useLoaderData()
+  // One card per product: bottle sizes of the same product share a card.
+  const entries = shopFront(Route.useLoaderData())
   const { pickup } = useSiteInfo()
-  const heroImages = products
-    .filter((product) => product.images.length > 0)
+  const heroImages = entries
+    .filter(({ product }) => product.images.length > 0)
     .slice(0, 2)
-    .map((product) => product.images[0])
+    .map(({ product }) => product.images[0])
   const steps = [
     ...firstSteps,
     {
@@ -147,8 +150,8 @@ function Home() {
           <hr className="gold-rule mx-auto mt-6" />
         </div>
         <div className="mx-auto mt-12 grid max-w-4xl gap-8 md:grid-cols-2">
-          {products.map((product) => (
-            <ProductCard key={product.slug} product={product} />
+          {entries.map(({ product, sizes }) => (
+            <ProductCard key={product.slug} product={product} sizes={sizes} />
           ))}
         </div>
       </section>

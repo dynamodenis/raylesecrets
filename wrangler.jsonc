@@ -1,0 +1,13 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  // The Cloudflare Pages project this site deploys to.
+  "name": "raylesecret",
+  "compatibility_date": "2026-06-01",
+  "compatibility_flags": ["nodejs_compat"],
+
+  // `pnpm build` copies these settings into dist/_worker.js/wrangler.json and
+  // adds the output folder; that copy is what `wrangler pages deploy` reads.
+  //
+  // Secrets (DATABASE_URL, ADMIN_PASSWORD_HASH, SESSION_SECRET, SITE_URL) are
+  // not kept here. The deploy workflow sends them to Cloudflare from GitHub.
+}

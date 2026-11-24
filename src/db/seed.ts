@@ -1,6 +1,7 @@
 // Fills the database with the catalogue, the pickup point and the settings.
-// Safe to run more than once: it only adds what is missing, except product
-// images, which always follow src/data/catalog.ts. Run with: pnpm db:seed
+// Safe to run more than once: it only adds what is missing. The exceptions are
+// product images and size families, which cannot be changed in the admin and
+// always follow src/data/catalog.ts. Run with: pnpm db:seed
 import { config } from 'dotenv'
 import { eq } from 'drizzle-orm'
 
@@ -29,13 +30,18 @@ let added = 0
       .returning({ id: products.id })
     if (inserted.length > 0) added++
 
-    // Images cannot be changed in the admin, so the catalogue file is the
-    // source of truth: replace whatever the database holds for this product.
+    // Images and the size family cannot be changed in the admin, so the
+    // catalogue file is the source of truth: replace whatever the database
+    // holds for this product.
     const [row] = await tx
       .select({ id: products.id })
       .from(products)
       .where(eq(products.slug, product.slug))
     await tx.batch([
+      tx
+        .update(products)
+        .set({ family: product.family })
+        .where(eq(products.id, row.id)),
       tx.delete(productImages).where(eq(productImages.productId, row.id)),
       tx.insert(productImages).values(
         images.map((image, sortOrder) => ({
@@ -67,6 +73,6 @@ let added = 0
 }
 
 console.log(
-  `Added ${added} new products (existing ones kept their details) and refreshed the product images.`,
+  `Added ${added} new products (existing ones kept their details) and refreshed the product images and size families.`,
 )
 process.exit(0)

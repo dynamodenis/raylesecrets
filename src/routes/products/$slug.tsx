@@ -4,6 +4,7 @@ import { Check, ChevronDown } from 'lucide-react'
 
 import { AddToCart } from '#/components/add-to-cart'
 import { ProductPicture } from '#/components/product-picture'
+import { SizePicker } from '#/components/size-picker'
 import { WhatsAppIcon } from '#/components/whatsapp'
 import { addToCart } from '#/lib/cart'
 import { originFrom, pageMeta } from '#/lib/seo'
@@ -17,13 +18,13 @@ import type { Product } from '#/data/catalog'
 
 export const Route = createFileRoute('/products/$slug')({
   loader: async ({ params }) => {
-    const product = await getProduct({ data: { slug: params.slug } })
-    if (!product) throw notFound()
-    return product
+    const found = await getProduct({ data: { slug: params.slug } })
+    if (!found) throw notFound()
+    return found
   },
   head: ({ loaderData, matches }) => {
     if (!loaderData) return {}
-    const product = loaderData
+    const { product } = loaderData
     const origin = originFrom(matches)
     const path = `/products/${product.slug}`
     const photo = product.images.at(0)
@@ -80,7 +81,7 @@ const trustLine = [
 ]
 
 function ProductPage() {
-  const product = Route.useLoaderData()
+  const { product, sizes } = Route.useLoaderData()
   const inStock = product.stock > 0
   const whatsappLink = useWhatsappLink()
   const orderLink = whatsappLink(
@@ -109,7 +110,9 @@ function ProductPage() {
           <div>
             <p className="eyebrow">{product.tagline}</p>
             <h1 className="mt-3 text-5xl sm:text-6xl">{product.name}</h1>
-            <p className="mt-2 text-ink-muted">{product.sizeLabel}</p>
+            {sizes.length === 1 && (
+              <p className="mt-2 text-ink-muted">{product.sizeLabel}</p>
+            )}
             <hr className="gold-rule mt-6" />
             <p className="mt-6 text-2xl font-medium text-ink">
               {formatKes(product.priceKes)}
@@ -118,9 +121,15 @@ function ProductPage() {
               {product.description}
             </p>
 
+            {sizes.length > 1 && (
+              <div className="mt-7">
+                <SizePicker sizes={sizes} current={product.slug} />
+              </div>
+            )}
+
             {inStock ? (
               <div className="mt-8">
-                <AddToCart product={product} />
+                <AddToCart key={product.slug} product={product} />
                 <a
                   href={orderLink}
                   target="_blank"
@@ -133,7 +142,9 @@ function ProductPage() {
               </div>
             ) : (
               <p className="mt-8 font-medium text-ink">
-                Out of stock. Message us to reserve one.
+                {sizes.length > 1
+                  ? `The ${product.sizeLabel} bottle is out of stock. Message us to reserve one.`
+                  : 'Out of stock. Message us to reserve one.'}
               </p>
             )}
 
@@ -168,7 +179,7 @@ function ProductPage() {
                 {product.name}
               </p>
               <p className="text-sm text-ink-muted">
-                {formatKes(product.priceKes)}
+                {product.sizeLabel} · {formatKes(product.priceKes)}
               </p>
             </div>
             <button

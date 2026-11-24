@@ -16,14 +16,8 @@ const config = defineConfig({
       // remove `preset` and `cloudflare` (the output then goes to .output/).
       preset: 'cloudflare_pages',
       compatibilityDate: '2026-06-01',
-      cloudflare: {
-        nodeCompat: true,
-        deployConfig: true,
-        wrangler: {
-          name: 'raylesecret',
-          compatibility_flags: ['nodejs_compat'],
-        },
-      },
+      // The project name and Cloudflare settings are in wrangler.jsonc.
+      cloudflare: { nodeCompat: true, deployConfig: true },
       rollupConfig: { external: [/^@sentry\//] },
       // No pre-compressed copies: Cloudflare compresses files itself.
       routeRules: {

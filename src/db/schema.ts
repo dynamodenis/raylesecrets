@@ -34,6 +34,10 @@ export const products = pgTable(
     tagline: text().notNull().default(''),
     description: text().notNull().default(''),
     sizeLabel: text('size_label').notNull().default(''),
+    // Products that are the same thing in different bottle sizes share a
+    // family, e.g. "anagen-oil". The shop shows them as one product with a
+    // size picker. Null for a product sold in one size.
+    family: text(),
     priceKes: integer('price_kes').notNull(),
     stock: integer().notNull().default(0),
     benefits: jsonb().$type<Array<string>>().notNull().default([]),

@@ -9,10 +9,10 @@ Stack: TanStack Start (React) + Neon Postgres. Payments: manual M-PESA (Paybill 
 
 - [x] **Brand spelling:** "Ray Le Secret".
 - [x] **Products for now:** Anagen Tonic (120 ml) and Anagen Oil (100 ml).
-- [ ] **Prices** (site currently shows placeholders: Tonic KES 1,200, Oil KES 1,000, in `src/data/catalog.ts`) in KES for each product, and whether there is a bundle price (Tonic + Oil).
-- [ ] **Payment details** (dummy values in `src/lib/site.ts` for now)**:** which of Paybill / Till / Pochi la Biashara you have, with the numbers and the registered name customers will see on their phone.
-- [ ] **Pickup place(s)** (dummy for now)**:** name, address, opening hours. Do you also deliver (rider in Nairobi, courier upcountry) and at what fee?
-- [ ] **Contact** (dummy for now)**:** WhatsApp number, phone, Instagram / TikTok / Facebook handles.
+- [x] **Prices:** Anagen Tonic KES 300; Anagen Oil 100 ml KES 500, 50 ml KES 450, 30 ml KES 300. No bundle price yet.
+- [ ] **Payment details:** Pochi la Biashara 0798 175 265 is set. Still needed: the registered name customers see on their phone (the site shows "RAY LE SECRET" for now).
+- [ ] **Pickup place(s):** Chokaa for now, open 8 am to 7 pm. Still needed: the exact spot, and whether you also deliver and at what fee.
+- [ ] **Contact:** calls and WhatsApp on 0798 175 265. Still needed: email and Instagram / TikTok / Facebook handles (dummy for now).
 - [x] **Real product photos.** Bottle photos are the main picture of each product; the label artwork follows as secondary images.
 - [ ] **Domain name** and where to host (section 3 has a recommendation).
 
